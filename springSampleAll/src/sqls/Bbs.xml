@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <!-- 
+  CREATE TABLE BBS(
+	SEQ NUMBER(8) PRIMARY KEY,
+	ID VARCHAR2(50) NOT NULL,
+	
+	REF NUMBER(8) NOT NULL,
+	STEP NUMBER(8) NOT NULL,
+	DEPTH NUMBER(8) NOT NULL,
+	
+	TITLE VARCHAR2(200) NOT NULL,
+	CONTENT VARCHAR2(4000) NOT NULL,
+	WDATE DATE NOT NULL,
+	
+	DEL NUMBER(1) NOT NULL,
+	READCOUNT NUMBER(8) NOT NULL
+);
+   -->
+  <mapper namespace="Bbs">
+  
+  <select id="getBbsList" resultType="bit.com.a.dto.BbsDto" parameterType="bit.com.a.dto.BbsParam">
+       SELECT *
+       FROM 
+         (  SELECT ROW_NUMBER()OVER(ORDER BY REF DESC, STEP ASC) AS RNUM,
+                   SEQ, ID, REF, STEP, DEPTH, TITLE, CONTENT, WDATE, DEL, READCOUNT
+             FROM BBS
+             <include refid="bbsSearch"></include>
+         )A
+        WHERE RNUM BETWEEN ${start} AND ${end}
+  </select>
+  
+  <select id="getBbsCount" parameterType="bit.com.a.dto.BbsParam" resultType="java.lang.Integer">
+      SELECT NVL(COUNT(*), 0) AS CNT
+      FROM BBS
+      <include refid="bbsSearch"></include>
+  </select>
+  
+  <select id="bbsDetail" resultType="bit.com.a.dto.BbsDto">
+        SELECT *
+        FROM BBS
+        WHERE SEQ = #{seq}
+  </select>
+  
+  <insert id="writeBbs">
+         INSERT INTO BBS (SEQ, ID, REF, STEP, DEPTH, TITLE, CONTENT, WDATE, DEL, READCOUNT)
+         VALUES( SEQ_BBS.NEXTVAL, #{id}, SEQ_BBS.CURRVAL, 0, 0, #{title}, #{content}, SYSDATE, 0, 0)   
+  </insert>
+  
+  <insert id="answerBbs" parameterType="bit.com.a.dto.BbsDto">
+         INSERT INTO BBS (SEQ, ID, REF, STEP, DEPTH, TITLE, CONTENT, WDATE, DEL, READCOUNT)
+         VALUES( SEQ_BBS.NEXTVAL, #{id}, #{ref }, #{step}+1 , 1, #{title}, #{content}, SYSDATE, 0, 0)   
+  </insert>
+  
+  <update id="answerStep" parameterType="bit.com.a.dto.BbsDto">
+           UPDATE BBS
+           SET STEP = STEP + 1
+           WHERE REF = #{ref } 
+           AND STEP > #{step }
+  </update>
+  
+  <delete id="bbsDelete">
+         DELETE BBS
+         WHERE SEQ = #{seq}
+  </delete>
+  
+  <update id="bbsUpdate">
+           UPDATE BBS
+           SET TITLE = #{title}, CONTENT = #{content}, WDATE = SYSDATE
+           WHERE SEQ = #{seq}
+  </update>
+  
+  <select id="bbsCount" resultType="int" parameterType="bit.com.a.dto.BbsParam">
+          SELECT COUNT(*)
+          FROM BBS
+          <include refid="bbsSearch"></include>
+          ORDER BY REF DESC, STEP ASC, DEPTH ASC
+  </select>
+
+<sql id="bbsSearch">
+       <trim prefix="WHERE" prefixOverrides="AND|OR">
+           <if test ="keyword != null and keyword != '' ">
+              <if test="s_category=='all' and keyword != null and keyword != '' ">
+
+				AND ID LIKE '%'||#{keyword}||'%' OR TITLE LIKE '%'|| #{keyword}|| '%'  OR CONTENT LIKE '%' ||#{keyword}|| '%'
+		    	</if>
+              <if test="s_category=='title' and keyword != null and keyword != '' ">
+
+				AND TITLE LIKE '%'||#{keyword}||'%'
+			</if>
+
+			<if test="s_category =='content' and keyword != null and keyword != '' ">
+
+				AND CONTENT LIKE '%'||#{keyword}||'%'
+			</if>
+
+			<if test="s_category=='w_id' and keyword != null and keyword != '' ">
+
+				AND ID LIKE '%'||#{keyword}||'%'
+			</if>	
+          </if>
+       </trim>
+</sql>
+  </mapper>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

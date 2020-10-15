@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="Youtube">
+  
+    <insert id="youtubesave" parameterType="bit.com.a.dto.YoutubeSave">
+       INSERT INTO YOUTUBE(SEQ, ID, TITLE, URL, WDATE)
+       VALUES( SEQ_YOUTUBE.NEXTVAL, #{id}, #{title}, #{url}, SYSDATE)
+    </insert>
+    
+    <select id="youtubesavelist" parameterType="bit.com.a.dto.YoutubeSave" 
+        resultType="bit.com.a.dto.YoutubeSave">
+      SELECT SEQ, ID, TITLE, URL, WDATE
+      FROM YOUTUBE
+      WHERE ID = #{id}
+      ORDER BY SEQ DESC
+    </select>
+  
+     <select id="checklist" parameterType="bit.com.a.dto.YoutubeSave" 
+       resultType="java.lang.Integer">
+       SELECT NVL(COUNT(*), 0)
+       FROM YOUTUBE
+       WHERE URL = #{url}
+       AND ID = #{id}
+        
+     </select>
+     
+     <delete id="deletelist" parameterType="bit.com.a.dto.YoutubeSave">
+     DELETE YOUTUBE
+     WHERE SEQ = #{seq}    
+     </delete>
+  </mapper>
