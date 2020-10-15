@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="Pds">
+  
+  <select id="getPdsList" resultType="bit.com.a.dto.PdsDto" parameterType="bit.com.a.dto.PdsParam">
+     SELECT SEQ, ID, TITLE, CONTENT, FILENAME, OLDFILENAME, 
+     READCOUNT, DOWNCOUNT, REGDATE
+     FROM PDS
+     <include refid="pdsSearch"></include>
+     ORDER BY SEQ DESC    
+  </select>
+  
+  <insert id="uploadPds" parameterType="bit.com.a.dto.PdsDto">
+    INSERT INTO PDS(SEQ, ID, TITLE, CONTENT, FILENAME, OLDFILENAME, READCOUNT, DOWNCOUNT, REGDATE)
+    VALUES( SEQ_PDS.NEXTVAL, #{id}, #{title}, #{content} , #{filename} , #{oldfilename}, 0, 0, SYSDATE)
+  
+  </insert>
+  
+  <select id="detailPds" resultType="bit.com.a.dto.PdsDto">
+    SELECT SEQ, ID, TITLE, CONTENT, FILENAME, OLDFILENAME, 
+       READCOUNT, DOWNCOUNT, REGDATE
+    FROM PDS
+    WHERE SEQ = #{seq}
+  
+  </select>
+  
+  <update id="updatePds" parameterType="bit.com.a.dto.PdsDto">
+     UPDATE PDS
+     SET TITLE = #{title}, CONTENT = #{content}, FILENAME = #{filename}, OLDFILENAME=#{oldfilename} , REGDATE = SYSDATE
+     WHERE SEQ = #{seq}
+  
+  </update>
+  
+  <delete id="deletePds">
+      DELETE PDS
+      WHERE SEQ = #{seq}
+  </delete>
+  
+  <sql id="pdsSearch">
+       <trim prefix="WHERE" prefixOverrides="AND|OR">
+           <if test ="keyword != null and keyword != '' ">
+              <if test="s_category=='all' and keyword != null and keyword != '' ">
+
+				AND ID LIKE '%'||#{keyword}||'%' OR TITLE LIKE '%'|| #{keyword}|| '%'  OR CONTENT LIKE '%' ||#{keyword}|| '%'
+		    	</if>
+              <if test="s_category=='title' and keyword != null and keyword != '' ">
+
+				AND TITLE LIKE '%'||#{keyword}||'%'
+			</if>
+
+			<if test="s_category =='content' and keyword != null and keyword != '' ">
+
+				AND CONTENT LIKE '%'||#{keyword}||'%'
+			</if>
+
+			<if test="s_category=='w_id' and keyword != null and keyword != '' ">
+
+				AND ID LIKE '%'||#{keyword}||'%'
+			</if>	
+          </if>
+       </trim>
+</sql>
+  
+  </mapper>
